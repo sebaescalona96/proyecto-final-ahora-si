@@ -27,7 +27,7 @@ El ecosistema de **BookPoint Chile** está compuesto por **14 componentes** (ser
 ### Componentes de Infraestructura y Soporte
 1.  **`ms-config-server`**: Servidor de configuración centralizado que distribuye las propiedades y perfiles (`.yml` / `.properties`) a todo el ecosistema de forma dinámica.
 2.  **`ms-gateway`**: El API Gateway del sistema. Actúa como punto de entrada único, encargándose del enrutamiento de peticiones, balanceo de carga y de la seguridad perimetral.
-3.  **`ms-eureka`**: Servidor de descubrimiento de servicios (Service Discovery), permitiendo que los microservicios se registren y localicen entre si de manera dinámica.
+
 
 ### Microservicios del Dominio de Negocio
 4.  **`ms-auth`**: Encargado de la seguridad, autenticación, emisión de tokens (JWT) y el control de acceso basado en roles para la plataforma.
