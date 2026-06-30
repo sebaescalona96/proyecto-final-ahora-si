@@ -1,5 +1,9 @@
 package com.bookpoint.producto.model;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Data @NoArgsConstructor @AllArgsConstructor
@@ -8,16 +12,22 @@ public class Producto {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nombre")
+    @NotBlank(message = "El nombre del producto es obligatorio")
+    @Size(min = 2, max = 200, message = "El nombre debe tener entre 2 y 200 caracteres")
+    @Column(name = "nombre", nullable = false)
     private String nombre;
 
+    @Size(max = 500, message = "La descripcion no puede superar 500 caracteres")
     @Column(name = "descripcion")
     private String descripcion;
 
-    @Column(name = "precio")
+    @NotNull(message = "El precio es obligatorio")
+    @Positive(message = "El precio debe ser mayor a cero")
+    @Column(name = "precio", nullable = false)
     private Double precio;
 
-    @Column(name = "categoria")
+    @NotBlank(message = "La categoria es obligatoria")
+    @Column(name = "categoria", nullable = false)
     private String categoria;
 
     @Column(name = "autor")

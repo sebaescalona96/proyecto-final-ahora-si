@@ -1,5 +1,8 @@
 package com.bookpoint.inventario.model;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 @Data @NoArgsConstructor @AllArgsConstructor
@@ -8,15 +11,21 @@ public class Inventario {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "productoId")
+    @NotNull(message = "El productoId es obligatorio")
+    @Positive(message = "El productoId debe ser mayor a cero")
+    @Column(name = "producto_id", nullable = false)
     private Long productoId;
 
-    @Column(name = "sucursalId")
+    @NotNull(message = "El sucursalId es obligatorio")
+    @Positive(message = "El sucursalId debe ser mayor a cero")
+    @Column(name = "sucursal_id", nullable = false)
     private Long sucursalId;
 
+    @Min(value = 0, message = "El stock no puede ser negativo")
     @Column(name = "stock")
     private int stock;
 
-    @Column(name = "stockMinimo")
+    @Min(value = 0, message = "El stock minimo no puede ser negativo")
+    @Column(name = "stock_minimo")
     private int stockMinimo;
 }
