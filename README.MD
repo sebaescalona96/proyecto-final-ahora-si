@@ -2,7 +2,7 @@
 
 ---
 
-## 1. Descripción del Contexto
+## 1. Descripción del Contexto / Dominio
 
 **BookPoint Chile** es una empresa nacional dedicada a la venta de libros, artículos de papelería y material educativo. Nacida originalmente como una librería independiente en Concepción, ha expandido sus operaciones con sucursales estratégicas en Temuco y La Serena. 
 
@@ -22,47 +22,47 @@ Para solventar estas debilidades, modernizar la plataforma y asegurar la alta di
 
 ## 3. Listado de Microservicios e Infraestructura
 
-El ecosistema de **BookPoint Chile** está compuesto por **14 componentes** (servicios de infraestructura y microservicios de negocio), estructurados bajo una arquitectura limpia y desacoplada:
+El ecosistema de **BookPoint Chile** está compuesto por **13 componentes** independientes (1 servicio de infraestructura perimetral y 12 microservicios de negocio), estructurados bajo un enrutamiento desacoplado:
 
-### Componentes de Infraestructura y Soporte
-1.  **`ms-config-server`**: Servidor de configuración centralizado que distribuye las propiedades y perfiles (`.yml` / `.properties`) a todo el ecosistema de forma dinámica.
-2.  **`ms-gateway`**: El API Gateway del sistema. Actúa como punto de entrada único, encargándose del enrutamiento de peticiones, balanceo de carga y de la seguridad perimetral.
-
+### Componentes de Infraestructura
+1.  **`gateway-service`**: El API Gateway del sistema (escuchando en el puerto `8080`). Actúa como punto de entrada único para los clientes, encargándose del enrutamiento estático de peticiones y de la seguridad perimetral.
 
 ### Microservicios del Dominio de Negocio
-4.  **`ms-auth`**: Encargado de la seguridad, autenticación, emisión de tokens (JWT) y el control de acceso basado en roles para la plataforma.
-5.  **`ms-books`**: Gestión integral del catálogo de libros, autores, editoriales, géneros literarios y precios.
-6.  **`ms-customer`**: Administración de perfiles de clientes, direcciones, información de contacto y soporte técnico.
-7.  **`ms-inventory`**: Control de stock centralizado y por sucursal física (Concepción, Temuco, La Serena), además del control de alertas de reposición mínima.
-8.  **`ms-orders`**: Orquestación y procesamiento de órdenes de compra generadas tanto en canales físicos como web.
-9.  **`ms-payments`**: Pasarela y procesamiento de transacciones financieras para el pago de los pedidos de forma segura.
-10. **`ms-reviews`**: Motor de interacción de clientes enfocado en capturar reseñas, valoraciones y opiniones de los productos.
-11. **`ms-shipping`**: Módulo de logística externa enfocado en la asignación de transportistas, optimización de rutas de distribución y seguimiento del estado del despacho a domicilio.
-12. **`ms-stationery`**: Catálogo especializado para la gestión de stock y ventas de artículos de papelería y material educativo escolar.
-13. **`ms-transfer`**: Operación logística interna para la gestión, aprobación y rechazo de transferencias de mercadería entre sucursales y la bodega central.
-14. **`ms-user`**: Gestión administrativa de los usuarios internos del sistema, asignación de permisos del personal y perfiles (Administradores, Jefes de Sucursal, Logística, Bodega).
+2.  **`usuario-service`**: Autenticación, control de accesos, gestión de permisos del personal y perfiles de usuario.
+3.  **`resena-service`**: Gestión de opiniones, valoraciones y feedback de productos por parte de los clientes.
+4.  **`devolucion-service`**: Gestión de cambios y devoluciones por fallas o conformidad de productos.
+5.  **`producto-service`**: Catálogo centralizado de libros y artículos escolares/papelería.
+6.  **`inventario-service`**: Control de existencias físicas en bodega y sucursales, además de alertas de reposición mínima.
+7.  **`venta-service`**: Registro transaccional, boletas y facturación de ventas presenciales y web.
+8.  **`pedido-service`**: Orquestación, carritos de compra e historial de órdenes de clientes web.
+9.  **`despacho-service`**: Gestión logística de envíos a domicilio y asignación de transportistas.
+10. **`sucursal-service`**: Datos informativos y administración física de locales de BookPoint (Concepción, Temuco, La Serena).
+11. **`proveedor-service`**: Gestión de editoriales asociadas y órdenes de abastecimiento de mercadería.
+12. **`transferencia-service`**: Movimientos internos de stock y solicitudes de reposición entre sucursales y la bodega central.
+13. **`descuento-service`**: Motor de reglas para cupones y ofertas promocionales.
+14. **`notificacion-service`**: Alertas del sistema a clientes (estados de compra) y a personal (alertas de stock bajo).
 
 ---
 
 ## 4. Rutas Principales del API Gateway
 
-El microservicio **`ms-gateway`** actúa como el punto de entrada unificado al ecosistema distribuido, escuchando de manera centralizada en el puerto **`8080`**. El enrutamiento perimetral hacia los diferentes microservicios está configurado bajo los siguientes segmentos de rutas y puertos base locales:
+El microservicio **`gateway-service`** actúa como el punto de entrada unificado al ecosistema distribuido, escuchando de manera centralizada en el puerto **`8080`**. El enrutamiento hacia los diferentes microservicios está configurado de forma estática bajo los siguientes segmentos de rutas y puertos locales:
 
 | ID del Servicio | Ruta del Predicado (Path) | Puerto Local | Descripción Funcional |
 | :--- | :--- | :--- | :--- |
-| `usuario-service` | `/api/v1/usuarios/**` | `8081` | Autenticación, control de accesos y perfiles de usuario. |
-| `resena-service` | `/api/v1/resenas/**` | `8082` | Gestión de opiniones, valoraciones y feedback de productos. |
-| `devolucion-service` | `/api/v1/devoluciones/**` | `8083` | Gestión de cambios y devoluciones por fallas o conformidad. |
-| `producto-service` | `/api/v1/productos/**` | `8084` | Catálogo central de libros y artículos escolares/papelería. |
-| `inventario-service` | `/api/v1/inventario/**` | `8085` | Control de existencias físicas y alertas de reposición mínima. |
-| `venta-service` | `/api/v1/ventas/**` | `8086` | Registro transaccional y facturación de ventas presenciales/web. |
-| `pedido-service` | `/api/v1/pedidos/**` | `8087` | Orquestación, carritos de compra e historial de órdenes. |
-| `despacho-service` | `/api/v1/despachos/**` | `8088` | Gestión logística de envíos a domicilio y asignación de transportistas. |
-| `sucursal-service` | `/api/v1/sucursales/**` | `8089` | Datos informativos y administración física de locales de BookPoint. |
-| `proveedor-service` | `/api/v1/proveedores/**` | `8090` | Gestión de editoriales asociadas y órdenes de abastecimiento. |
-| `transferencia-service`| `/api/v1/transferencias/**`| `8091` | Movimientos internos de stock entre sucursales y bodega central. |
-| `descuento-service` | `/api/v1/descuentos/**` | `8092` | Motor de reglas para cupones y ofertas promocionales. |
-| `notificacion-service` | `/api/v1/notificaciones/**`| `8093` | Alertas del sistema a clientes (estados) y a bodega (alertas de stock). |
+| `usuario-service` | `/api/v1/usuarios/**` | `8081` | Gestión de usuarios y seguridad. |
+| `resena-service` | `/api/v1/resenas/**` | `8082` | Gestión de opiniones y calificaciones. |
+| `devolucion-service` | `/api/v1/devoluciones/**` | `8083` | Gestión de devoluciones y cambios. |
+| `producto-service` | `/api/v1/productos/**` | `8084` | Catálogo de libros y papelería. |
+| `inventario-service` | `/api/v1/inventario/**` | `8085` | Control de stock y existencias. |
+| `venta-service` | `/api/v1/ventas/**` | `8086` | Flujo de venta y facturación. |
+| `pedido-service` | `/api/v1/pedidos/**` | `8087` | Carrito de compras y órdenes. |
+| `despacho-service` | `/api/v1/despachos/**` | `8088` | Despachos y logística de envíos. |
+| `sucursal-service` | `/api/v1/sucursales/**` | `8089` | Administración de tiendas físicas. |
+| `proveedor-service` | `/api/v1/proveedores/**` | `8090` | Editoriales y órdenes de compra. |
+| `transferencia-service`| `/api/v1/transferencias/**`| `8091` | Movimientos internos de mercadería.|
+| `descuento-service` | `/api/v1/descuentos/**` | `8092` | Cupones y promociones. |
+| `notificacion-service` | `/api/v1/notificaciones/**`| `8093` | Sistema de alertas por correo/push. |
 
 ---
 
@@ -88,3 +88,14 @@ Toda la API se encuentra documentada utilizando OpenAPI 3 y la interfaz interact
 
 ---
 
+## 6. Instrucciones Básicas de Ejecución
+
+Para iniciar el ecosistema de microservicios de manera correcta en un entorno de desarrollo local, siga estos pasos:
+
+### Paso 1: Clonar el Repositorio
+```bash
+git clone [https://github.com/sebaescalona96/proyecto-final-ahora-si.git](https://github.com/sebaescalona96/proyecto-final-ahora-si.git)
+cd proyecto-final-ahora-si
+
+message.txt
+8 KB
