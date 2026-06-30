@@ -87,15 +87,3 @@ Toda la API se encuentra documentada utilizando OpenAPI 3 y la interfaz interact
 | `notificacion-service` | [http://localhost:8080/api/v1/notificaciones/swagger-ui/index.html](http://localhost:8080/api/v1/notificaciones/swagger-ui/index.html) |
 
 ---
-
-## 6. Instrucciones Básicas de Ejecución
-
-Para iniciar el ecosistema de microservicios de manera correcta en un entorno de desarrollo local, siga estos pasos:
-
-### Paso 1: Clonar el Repositorio
-```bash
-git clone [https://github.com/sebaescalona96/proyecto-final-ahora-si.git](https://github.com/sebaescalona96/proyecto-final-ahora-si.git)
-cd proyecto-final-ahora-si
-
-message.txt
-8 KB
