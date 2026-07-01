@@ -1,4 +1,5 @@
 package com.bookpoint.usuario.service;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -14,14 +15,19 @@ import com.bookpoint.usuario.model.Usuario;
 import com.bookpoint.usuario.repository.UsuarioRepository;
 
 public class UsuarioServiceTest {
-    @Mock private UsuarioRepository usuarioRepository;
-    @InjectMocks private UsuarioService usuarioService;
+    @Mock
+    private UsuarioRepository usuarioRepository;
+    @InjectMocks
+    private UsuarioService usuarioService;
 
-    @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testGuardarUsuario() {
-        Usuario nuevo   = new Usuario(null, "nombre", "email", "password", "rol");
+        Usuario nuevo = new Usuario(null, "nombre", "email", "password", "rol");
         Usuario guardado = new Usuario(1L, "nombre", "email", "password", "rol");
         when(usuarioRepository.save(nuevo)).thenReturn(guardado);
         Usuario resultado = usuarioService.guardarUsuario(nuevo);
@@ -58,7 +64,7 @@ public class UsuarioServiceTest {
     @Test
     void testActualizarUsuario() {
         Usuario existente = new Usuario(1L, "nombre", "email", "password", "rol");
-        Usuario nuevo     = new Usuario(null, "alt-nombre", "alt-email", "alt-password", "alt-rol");
+        Usuario nuevo = new Usuario(null, "alt-nombre", "alt-email", "alt-password", "alt-rol");
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
         Usuario resultado = usuarioService.actualizarUsuario(1L, nuevo);
@@ -66,16 +72,19 @@ public class UsuarioServiceTest {
         verify(usuarioRepository).save(existente);
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testEliminarUsuario
-    // Dificultad: ⭐ (FACIL) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. doNothing().when(usuarioRepository).deleteById(1L);
-    //   2. usuarioService.eliminarUsuario(1L);
-    //   3. verify(usuarioRepository).deleteById(1L);
-    // ══════════════════════════════════════════════════════════════════
     @Test
-    void testEliminarUsuario() {
-        // TODO: implementar esta prueba en vivo
+    void testActualizarUsuarioNoExistenteLanzaExcepcion() {
+        Long idInexistente = 99L;
+        com.bookpoint.usuario.model.Usuario usuarioDatosNuevos = new com.bookpoint.usuario.model.Usuario();
+
+        // Corregido: Todo el flujo de Mockito en una sola línea continua
+        org.mockito.Mockito.when(usuarioRepository.findById(idInexistente)).thenReturn(java.util.Optional.empty());
+
+        // Corregido: El flujo de AssertJ con el punto pegado a sus métodos
+        // correspondientes
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> {
+            usuarioService.actualizarUsuario(idInexistente, usuarioDatosNuevos);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("No existe usuario con id: " + idInexistente);
     }
 }

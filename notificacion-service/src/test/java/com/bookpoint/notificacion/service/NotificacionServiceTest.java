@@ -1,4 +1,5 @@
 package com.bookpoint.notificacion.service;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -14,14 +15,19 @@ import com.bookpoint.notificacion.model.Notificacion;
 import com.bookpoint.notificacion.repository.NotificacionRepository;
 
 public class NotificacionServiceTest {
-    @Mock private NotificacionRepository notificacionRepository;
-    @InjectMocks private NotificacionService notificacionService;
+    @Mock
+    private NotificacionRepository notificacionRepository;
+    @InjectMocks
+    private NotificacionService notificacionService;
 
-    @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testGuardarNotificacion() {
-        Notificacion nuevo   = new Notificacion(null, 1L, "mensaje", "tipo", true, java.time.LocalDate.now());
+        Notificacion nuevo = new Notificacion(null, 1L, "mensaje", "tipo", true, java.time.LocalDate.now());
         Notificacion guardado = new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now());
         when(notificacionRepository.save(nuevo)).thenReturn(guardado);
         Notificacion resultado = notificacionService.guardarNotificacion(nuevo);
@@ -31,7 +37,8 @@ public class NotificacionServiceTest {
 
     @Test
     void testListarNotificacions() {
-        List<Notificacion> lista = Arrays.asList(new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now()));
+        List<Notificacion> lista = Arrays
+                .asList(new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now()));
         when(notificacionRepository.findAll()).thenReturn(lista);
         List<Notificacion> resultado = notificacionService.listarNotificacions();
         assertThat(resultado).hasSize(1);
@@ -58,7 +65,7 @@ public class NotificacionServiceTest {
     @Test
     void testActualizarNotificacion() {
         Notificacion existente = new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now());
-        Notificacion nuevo     = new Notificacion(null, 1L, "alt-mensaje", "alt-tipo", true, java.time.LocalDate.now());
+        Notificacion nuevo = new Notificacion(null, 1L, "alt-mensaje", "alt-tipo", true, java.time.LocalDate.now());
         when(notificacionRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(notificacionRepository.save(any(Notificacion.class))).thenAnswer(i -> i.getArgument(0));
         Notificacion resultado = notificacionService.actualizarNotificacion(1L, nuevo);
@@ -66,16 +73,20 @@ public class NotificacionServiceTest {
         verify(notificacionRepository).save(existente);
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testEliminarNotificacion
-    // Dificultad: ⭐ (FACIL) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. doNothing().when(notificacionRepository).deleteById(1L);
-    //   2. notificacionService.eliminarNotificacion(1L);
-    //   3. verify(notificacionRepository).deleteById(1L);
-    // ══════════════════════════════════════════════════════════════════
     @Test
-    void testEliminarNotificacion() {
-        // TODO: implementar esta prueba en vivo
+    void testActualizarNotificacionNoExistenteLanzaExcepcion() {
+        Long idInexistente = 99L;
+        com.bookpoint.notificacion.model.Notificacion datosNuevos = new com.bookpoint.notificacion.model.Notificacion();
+        datosNuevos.setId(idInexistente);
+
+        // Simulamos que el repositorio no encuentra el registro
+        org.mockito.Mockito.when(notificacionRepository.findById(idInexistente))
+                .thenReturn(java.util.Optional.empty());
+
+        // Verificamos que se lance la RuntimeException con el mensaje exacto sin tilde
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> {
+            notificacionService.actualizarNotificacion(idInexistente, datosNuevos);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("No existe notificacion con id: " + idInexistente);
     }
 }

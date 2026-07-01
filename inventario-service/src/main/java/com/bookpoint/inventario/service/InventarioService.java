@@ -34,4 +34,8 @@ public class InventarioService {
         inv.setStock(inv.getStock() - cantidad);
         inventarioRepository.save(inv);
     }
+    public Object obtainerInventarioPorProductoId(long l) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'obtainerInventarioPorProductoId'");
+    }
 }

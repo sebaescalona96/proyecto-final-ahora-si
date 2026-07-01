@@ -1,4 +1,5 @@
 package com.bookpoint.proveedor.service;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -14,14 +15,19 @@ import com.bookpoint.proveedor.model.Proveedor;
 import com.bookpoint.proveedor.repository.ProveedorRepository;
 
 public class ProveedorServiceTest {
-    @Mock private ProveedorRepository proveedorRepository;
-    @InjectMocks private ProveedorService proveedorService;
+    @Mock
+    private ProveedorRepository proveedorRepository;
+    @InjectMocks
+    private ProveedorService proveedorService;
 
-    @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testGuardarProveedor() {
-        Proveedor nuevo   = new Proveedor(null, "nombre", "email", "telefono", "editorial", true);
+        Proveedor nuevo = new Proveedor(null, "nombre", "email", "telefono", "editorial", true);
         Proveedor guardado = new Proveedor(1L, "nombre", "email", "telefono", "editorial", true);
         when(proveedorRepository.save(nuevo)).thenReturn(guardado);
         Proveedor resultado = proveedorService.guardarProveedor(nuevo);
@@ -58,7 +64,7 @@ public class ProveedorServiceTest {
     @Test
     void testActualizarProveedor() {
         Proveedor existente = new Proveedor(1L, "nombre", "email", "telefono", "editorial", true);
-        Proveedor nuevo     = new Proveedor(null, "alt-nombre", "alt-email", "alt-telefono", "alt-editorial", true);
+        Proveedor nuevo = new Proveedor(null, "alt-nombre", "alt-email", "alt-telefono", "alt-editorial", true);
         when(proveedorRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(proveedorRepository.save(any(Proveedor.class))).thenAnswer(i -> i.getArgument(0));
         Proveedor resultado = proveedorService.actualizarProveedor(1L, nuevo);
@@ -66,16 +72,20 @@ public class ProveedorServiceTest {
         verify(proveedorRepository).save(existente);
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testEliminarProveedor
-    // Dificultad: ⭐ (FACIL) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. doNothing().when(proveedorRepository).deleteById(1L);
-    //   2. proveedorService.eliminarProveedor(1L);
-    //   3. verify(proveedorRepository).deleteById(1L);
-    // ══════════════════════════════════════════════════════════════════
     @Test
-    void testEliminarProveedor() {
-        // TODO: implementar esta prueba en vivo
+    void testActualizarProveedorNoExistenteLanzaExcepcion() {
+        Long idInexistente = 99L;
+        com.bookpoint.proveedor.model.Proveedor datosNuevos = new com.bookpoint.proveedor.model.Proveedor();
+        datosNuevos.setId(idInexistente);
+
+        // Simulamos que el repositorio no encuentra al proveedor
+        org.mockito.Mockito.when(proveedorRepository.findById(idInexistente))
+                .thenReturn(java.util.Optional.empty());
+
+        // Verificamos que lance la excepción con el mensaje exacto de tu servicio
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> {
+            proveedorService.actualizarProveedor(idInexistente, datosNuevos);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("No existe proveedor con id: " + idInexistente);
     }
 }

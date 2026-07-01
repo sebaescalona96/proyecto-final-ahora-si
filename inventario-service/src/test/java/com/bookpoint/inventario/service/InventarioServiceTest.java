@@ -1,27 +1,40 @@
 package com.bookpoint.inventario.service;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+
+import com.bookpoint.inventario.model.Inventario;
+import com.bookpoint.inventario.repository.InventarioRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import com.bookpoint.inventario.model.Inventario;
-import com.bookpoint.inventario.repository.InventarioRepository;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class InventarioServiceTest {
-    @Mock private InventarioRepository inventarioRepository;
-    @InjectMocks private InventarioService inventarioService;
 
-    @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
+    @Mock
+    private InventarioRepository inventarioRepository;
+
+    @InjectMocks
+    private InventarioService inventarioService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testGuardarInventario() {
-        Inventario nuevo   = new Inventario(null, 1L, 1L, 5, 5);
+        Inventario nuevo = new Inventario(null, 1L, 1L, 5, 5);
         Inventario guardado = new Inventario(1L, 1L, 1L, 5, 5);
         when(inventarioRepository.save(nuevo)).thenReturn(guardado);
         Inventario resultado = inventarioService.guardarInventario(nuevo);
@@ -58,7 +71,7 @@ public class InventarioServiceTest {
     @Test
     void testActualizarInventario() {
         Inventario existente = new Inventario(1L, 1L, 1L, 5, 5);
-        Inventario nuevo     = new Inventario(null, 1L, 1L, 10, 10);
+        Inventario nuevo = new Inventario(null, 1L, 1L, 10, 10);
         when(inventarioRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(inventarioRepository.save(any(Inventario.class))).thenAnswer(i -> i.getArgument(0));
         Inventario resultado = inventarioService.actualizarInventario(1L, nuevo);
@@ -66,16 +79,58 @@ public class InventarioServiceTest {
         verify(inventarioRepository).save(existente);
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testEliminarInventario
-    // Dificultad: ⭐ (FACIL) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. doNothing().when(inventarioRepository).deleteById(1L);
-    //   2. inventarioService.eliminarInventario(1L);
-    //   3. verify(inventarioRepository).deleteById(1L);
-    // ══════════════════════════════════════════════════════════════════
     @Test
-    void testEliminarInventario() {
-        // TODO: implementar esta prueba en vivo
+    void testActualizarInventarioNoExistenteLanzaExcepcion() {
+        Long idInexistente = 99L;
+        com.bookpoint.inventario.model.Inventario datosNuevos = new com.bookpoint.inventario.model.Inventario();
+        datosNuevos.setId(idInexistente);
+
+        Mockito.when(inventarioRepository.findById(idInexistente))
+                .thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> {
+            inventarioService.actualizarInventario(idInexistente, datosNuevos);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("No existe inventario con id: " + idInexistente);
+    }
+
+    @Test
+    void testObtenerInventarioPorProductoIdLanzaExceptionMetodoNoImplementado() {
+        assertThatThrownBy(() -> {
+            inventarioService.obtainerInventarioPorProductoId(5L);
+        }).isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("Unimplemented method 'obtainerInventarioPorProductoId'");
+    }
+
+    @Test
+    void testDescontarStockExitoso() {
+        Inventario inv = new Inventario(1L, 1L, 1L, 20, 5);
+        when(inventarioRepository.findByProductoIdAndSucursalId(1L, 1L)).thenReturn(Optional.of(inv));
+
+        inventarioService.descontarStock(1L, 1L, 5);
+
+        assertThat(inv.getStock()).isEqualTo(15);
+        verify(inventarioRepository).save(inv);
+    }
+
+    @Test
+    void testDescontarStockInexistenteLanzaExcepcion() {
+        when(inventarioRepository.findByProductoIdAndSucursalId(1L, 1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> {
+            inventarioService.descontarStock(1L, 1L, 5);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("No hay inventario para productoId=1 sucursalId=1");
+    }
+
+    @Test
+    void testDescontarStockInsuficienteLanzaExcepcion() {
+        Inventario inv = new Inventario(1L, 1L, 1L, 3, 1);
+        when(inventarioRepository.findByProductoIdAndSucursalId(1L, 1L)).thenReturn(Optional.of(inv));
+
+        assertThatThrownBy(() -> {
+            inventarioService.descontarStock(1L, 1L, 10);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Stock insuficiente. Disponible: 3, requerido: 10");
     }
 }

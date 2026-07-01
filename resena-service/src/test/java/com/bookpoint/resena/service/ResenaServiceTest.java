@@ -1,4 +1,5 @@
 package com.bookpoint.resena.service;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -14,14 +15,19 @@ import com.bookpoint.resena.model.Resena;
 import com.bookpoint.resena.repository.ResenaRepository;
 
 public class ResenaServiceTest {
-    @Mock private ResenaRepository resenaRepository;
-    @InjectMocks private ResenaService resenaService;
+    @Mock
+    private ResenaRepository resenaRepository;
+    @InjectMocks
+    private ResenaService resenaService;
 
-    @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testGuardarResena() {
-        Resena nuevo   = new Resena(null, 1L, 1L, "comentario", 5, java.time.LocalDate.now());
+        Resena nuevo = new Resena(null, 1L, 1L, "comentario", 5, java.time.LocalDate.now());
         Resena guardado = new Resena(1L, 1L, 1L, "comentario", 5, java.time.LocalDate.now());
         when(resenaRepository.save(nuevo)).thenReturn(guardado);
         Resena resultado = resenaService.guardarResena(nuevo);
@@ -58,7 +64,7 @@ public class ResenaServiceTest {
     @Test
     void testActualizarResena() {
         Resena existente = new Resena(1L, 1L, 1L, "comentario", 5, java.time.LocalDate.now());
-        Resena nuevo     = new Resena(null, 1L, 1L, "alt-comentario", 10, java.time.LocalDate.now());
+        Resena nuevo = new Resena(null, 1L, 1L, "alt-comentario", 10, java.time.LocalDate.now());
         when(resenaRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(resenaRepository.save(any(Resena.class))).thenAnswer(i -> i.getArgument(0));
         Resena resultado = resenaService.actualizarResena(1L, nuevo);
@@ -66,16 +72,19 @@ public class ResenaServiceTest {
         verify(resenaRepository).save(existente);
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testEliminarResena
-    // Dificultad: ⭐ (FACIL) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. doNothing().when(resenaRepository).deleteById(1L);
-    //   2. resenaService.eliminarResena(1L);
-    //   3. verify(resenaRepository).deleteById(1L);
-    // ══════════════════════════════════════════════════════════════════
     @Test
-    void testEliminarResena() {
-        // TODO: implementar esta prueba en vivo
+    void testActualizarResenaNoExistenteLanzaExcepcion() {
+        Long idInexistente = 99L;
+        com.bookpoint.resena.model.Resena datosNuevos = new com.bookpoint.resena.model.Resena();
+        datosNuevos.setId(idInexistente);
+
+        org.mockito.Mockito.when(resenaRepository.findById(idInexistente))
+                .thenReturn(java.util.Optional.empty());
+
+        // Buscamos "resena" con 'n' para que calce exactamente con tu ResenaService
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> {
+            resenaService.actualizarResena(idInexistente, datosNuevos);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("No existe resena con id: " + idInexistente);
     }
 }

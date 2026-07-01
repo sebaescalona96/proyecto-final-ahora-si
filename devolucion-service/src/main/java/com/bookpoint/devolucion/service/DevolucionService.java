@@ -10,7 +10,7 @@ public class DevolucionService {
     @Autowired private DevolucionRepository devolucionRepository;
 
     public Devolucion guardarDevolucion(Devolucion devolucion) { return devolucionRepository.save(devolucion); }
-    public List<Devolucion> listarDevolucions() { return devolucionRepository.findAll(); }
+    public List<Devolucion> listarDevoluciones() { return devolucionRepository.findAll(); }
     public Optional<Devolucion> obtenerDevolucionPorId(Long id) { return devolucionRepository.findById(id); }
     public Devolucion actualizarDevolucion(Long id, Devolucion devolucion) {
         Devolucion existente = devolucionRepository.findById(id)

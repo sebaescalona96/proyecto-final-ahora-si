@@ -1,4 +1,5 @@
 package com.bookpoint.producto.controller;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bookpoint.producto.dto.ProductoDTO;
 import com.bookpoint.producto.service.ProductoService;
@@ -22,16 +23,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ProductoController.class)
 @ActiveProfiles("test")
 public class ProductoControllerTest {
-    @Autowired private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
     @SuppressWarnings("removal")
-    @MockBean private ProductoService productoService;
-    @Autowired private ObjectMapper objectMapper;
+    @MockBean
+    private ProductoService productoService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void testListarTodos() throws Exception {
         ProductoDTO dto = new ProductoDTO(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial");
-        Mockito.when(productoService.listarProductos()).thenReturn(Arrays.asList(new Producto(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial")));
-        Mockito.when(productoService.listarProductos()).thenReturn(Arrays.asList(new Producto(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial")));
+        Mockito.when(productoService.listarProductos()).thenReturn(
+                Arrays.asList(new Producto(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial")));
+        Mockito.when(productoService.listarProductos()).thenReturn(
+                Arrays.asList(new Producto(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial")));
         mockMvc.perform(get("/api/v1/productos")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)));
     }
 
@@ -42,7 +48,7 @@ public class ProductoControllerTest {
         Mockito.when(productoService.guardarProducto(ArgumentMatchers.<Producto>any())).thenReturn(guardado);
         mockMvc.perform(post("/api/v1/productos").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
     }
 
     @Test
@@ -61,15 +67,36 @@ public class ProductoControllerTest {
     @Test
     void testActualizar() throws Exception {
         Producto actualizado = new Producto(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial");
-        Mockito.when(productoService.actualizarProducto(eq(1L), ArgumentMatchers.<Producto>any())).thenReturn(actualizado);
+        Mockito.when(productoService.actualizarProducto(eq(1L), ArgumentMatchers.<Producto>any()))
+                .thenReturn(actualizado);
         mockMvc.perform(put("/api/v1/productos/1").contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new ProductoDTO(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial"))))
-            .andExpect(status().isOk());
+                .content(objectMapper.writeValueAsString(
+                        new ProductoDTO(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial"))))
+                .andExpect(status().isOk());
     }
 
     @Test
     void testEliminar() throws Exception {
         Mockito.doNothing().when(productoService).eliminarProducto(1L);
         mockMvc.perform(delete("/api/v1/productos/1")).andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testActualizarProductoNoExistenteDevuelveNotFound() throws Exception {
+        // Inicializamos el DTO simulando datos básicos válidos
+        com.bookpoint.producto.dto.ProductoDTO req = new com.bookpoint.producto.dto.ProductoDTO();
+        req.setNombre("Libro de Prueba");
+        req.setPrecio(14990.0); // Ajusta según el tipo de dato de tu precio si es necesario
+
+        // Simulamos que el servicio lanza la excepción al buscar el ID 99
+        org.mockito.Mockito
+                .when(productoService.actualizarProducto(org.mockito.Mockito.eq(99L), org.mockito.Mockito.any()))
+                .thenThrow(new RuntimeException("No existe producto con id: 99"));
+
+        // Ejecutamos la petición PUT esperando el 404 Not Found
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/productos/99")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound());
     }
 }

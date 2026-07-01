@@ -1,4 +1,5 @@
 package com.bookpoint.sucursal.service;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -14,14 +15,19 @@ import com.bookpoint.sucursal.model.Sucursal;
 import com.bookpoint.sucursal.repository.SucursalRepository;
 
 public class SucursalServiceTest {
-    @Mock private SucursalRepository sucursalRepository;
-    @InjectMocks private SucursalService sucursalService;
+    @Mock
+    private SucursalRepository sucursalRepository;
+    @InjectMocks
+    private SucursalService sucursalService;
 
-    @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testGuardarSucursal() {
-        Sucursal nuevo   = new Sucursal(null, "nombre", "direccion", "ciudad", "telefono", "horario");
+        Sucursal nuevo = new Sucursal(null, "nombre", "direccion", "ciudad", "telefono", "horario");
         Sucursal guardado = new Sucursal(1L, "nombre", "direccion", "ciudad", "telefono", "horario");
         when(sucursalRepository.save(nuevo)).thenReturn(guardado);
         Sucursal resultado = sucursalService.guardarSucursal(nuevo);
@@ -58,7 +64,7 @@ public class SucursalServiceTest {
     @Test
     void testActualizarSucursal() {
         Sucursal existente = new Sucursal(1L, "nombre", "direccion", "ciudad", "telefono", "horario");
-        Sucursal nuevo     = new Sucursal(null, "alt-nombre", "alt-direccion", "alt-ciudad", "alt-telefono", "alt-horario");
+        Sucursal nuevo = new Sucursal(null, "alt-nombre", "alt-direccion", "alt-ciudad", "alt-telefono", "alt-horario");
         when(sucursalRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(sucursalRepository.save(any(Sucursal.class))).thenAnswer(i -> i.getArgument(0));
         Sucursal resultado = sucursalService.actualizarSucursal(1L, nuevo);
@@ -66,16 +72,20 @@ public class SucursalServiceTest {
         verify(sucursalRepository).save(existente);
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testEliminarSucursal
-    // Dificultad: ⭐ (FACIL) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. doNothing().when(sucursalRepository).deleteById(1L);
-    //   2. sucursalService.eliminarSucursal(1L);
-    //   3. verify(sucursalRepository).deleteById(1L);
-    // ══════════════════════════════════════════════════════════════════
     @Test
-    void testEliminarSucursal() {
-        // TODO: implementar esta prueba en vivo
+    void testActualizarSucursalNoExistenteLanzaExcepcion() {
+        Long idInexistente = 99L;
+        com.bookpoint.sucursal.model.Sucursal datosNuevos = new com.bookpoint.sucursal.model.Sucursal();
+
+        // Simulamos que el repositorio no encuentra la sucursal y devuelve un Optional vacío
+        org.mockito.Mockito.when(sucursalRepository.findById(idInexistente))
+                .thenReturn(java.util.Optional.empty());
+
+        // Verificamos que el servicio arroje la RuntimeException esperada
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> {
+            sucursalService.actualizarSucursal(idInexistente, datosNuevos);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("No existe sucursal con id: " + idInexistente);
     }
+
 }

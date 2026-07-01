@@ -1,4 +1,5 @@
 package com.bookpoint.sucursal.controller;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bookpoint.sucursal.dto.SucursalDTO;
 import com.bookpoint.sucursal.service.SucursalService;
@@ -22,16 +23,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(SucursalController.class)
 @ActiveProfiles("test")
 public class SucursalControllerTest {
-    @Autowired private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
     @SuppressWarnings("removal")
-    @MockBean private SucursalService sucursalService;
-    @Autowired private ObjectMapper objectMapper;
+    @MockBean
+    private SucursalService sucursalService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void testListarTodos() throws Exception {
         SucursalDTO dto = new SucursalDTO(1L, "nombre", "direccion", "ciudad", "telefono", "horario");
-        Mockito.when(sucursalService.listarSucursals()).thenReturn(Arrays.asList(new Sucursal(1L, "nombre", "direccion", "ciudad", "telefono", "horario")));
-        Mockito.when(sucursalService.listarSucursals()).thenReturn(Arrays.asList(new Sucursal(1L, "nombre", "direccion", "ciudad", "telefono", "horario")));
+        Mockito.when(sucursalService.listarSucursals())
+                .thenReturn(Arrays.asList(new Sucursal(1L, "nombre", "direccion", "ciudad", "telefono", "horario")));
+        Mockito.when(sucursalService.listarSucursals())
+                .thenReturn(Arrays.asList(new Sucursal(1L, "nombre", "direccion", "ciudad", "telefono", "horario")));
         mockMvc.perform(get("/api/v1/sucursales")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)));
     }
 
@@ -42,7 +48,7 @@ public class SucursalControllerTest {
         Mockito.when(sucursalService.guardarSucursal(ArgumentMatchers.<Sucursal>any())).thenReturn(guardado);
         mockMvc.perform(post("/api/v1/sucursales").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
     }
 
     @Test
@@ -61,15 +67,34 @@ public class SucursalControllerTest {
     @Test
     void testActualizar() throws Exception {
         Sucursal actualizado = new Sucursal(1L, "nombre", "direccion", "ciudad", "telefono", "horario");
-        Mockito.when(sucursalService.actualizarSucursal(eq(1L), ArgumentMatchers.<Sucursal>any())).thenReturn(actualizado);
+        Mockito.when(sucursalService.actualizarSucursal(eq(1L), ArgumentMatchers.<Sucursal>any()))
+                .thenReturn(actualizado);
         mockMvc.perform(put("/api/v1/sucursales/1").contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new SucursalDTO(1L, "nombre", "direccion", "ciudad", "telefono", "horario"))))
-            .andExpect(status().isOk());
+                .content(objectMapper.writeValueAsString(
+                        new SucursalDTO(1L, "nombre", "direccion", "ciudad", "telefono", "horario"))))
+                .andExpect(status().isOk());
     }
 
     @Test
     void testEliminar() throws Exception {
         Mockito.doNothing().when(sucursalService).eliminarSucursal(1L);
         mockMvc.perform(delete("/api/v1/sucursales/1")).andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testActualizarSucursalNoExistenteDevuelveNotFound() throws Exception {
+        // Creamos un DTO vacío para la petición (ajusta según los campos de tu
+        // SucursalDTO si usa constructor con parámetros)
+        com.bookpoint.sucursal.dto.SucursalDTO req = new com.bookpoint.sucursal.dto.SucursalDTO();
+
+        // Simulamos que el servicio lanza la excepción al no encontrar el ID 99
+        org.mockito.Mockito
+                .when(sucursalService.actualizarSucursal(org.mockito.Mockito.eq(99L), org.mockito.Mockito.any()))
+                .thenThrow(new RuntimeException("No existe sucursal con id: 99"));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/sucursales/99")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound());
     }
 }

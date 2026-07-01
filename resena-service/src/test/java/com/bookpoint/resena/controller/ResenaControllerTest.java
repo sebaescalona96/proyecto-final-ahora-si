@@ -1,4 +1,5 @@
 package com.bookpoint.resena.controller;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bookpoint.resena.dto.ResenaDTO;
 import com.bookpoint.resena.service.ResenaService;
@@ -22,16 +23,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ResenaController.class)
 @ActiveProfiles("test")
 public class ResenaControllerTest {
-    @Autowired private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
     @SuppressWarnings("removal")
-    @MockBean private ResenaService resenaService;
-    @Autowired private ObjectMapper objectMapper;
+    @MockBean
+    private ResenaService resenaService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void testListarTodos() throws Exception {
         ResenaDTO dto = new ResenaDTO(1L, 1L, 1L, "comentario", 5, java.time.LocalDate.now());
-        Mockito.when(resenaService.listarResenas()).thenReturn(Arrays.asList(new Resena(1L, 1L, 1L, "comentario", 5, java.time.LocalDate.now())));
-        Mockito.when(resenaService.listarResenas()).thenReturn(Arrays.asList(new Resena(1L, 1L, 1L, "comentario", 5, java.time.LocalDate.now())));
+        Mockito.when(resenaService.listarResenas())
+                .thenReturn(Arrays.asList(new Resena(1L, 1L, 1L, "comentario", 5, java.time.LocalDate.now())));
+        Mockito.when(resenaService.listarResenas())
+                .thenReturn(Arrays.asList(new Resena(1L, 1L, 1L, "comentario", 5, java.time.LocalDate.now())));
         mockMvc.perform(get("/api/v1/resenas")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)));
     }
 
@@ -42,7 +48,7 @@ public class ResenaControllerTest {
         Mockito.when(resenaService.guardarResena(ArgumentMatchers.<Resena>any())).thenReturn(guardado);
         mockMvc.perform(post("/api/v1/resenas").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
     }
 
     @Test
@@ -63,13 +69,33 @@ public class ResenaControllerTest {
         Resena actualizado = new Resena(1L, 1L, 1L, "comentario", 5, java.time.LocalDate.now());
         Mockito.when(resenaService.actualizarResena(eq(1L), ArgumentMatchers.<Resena>any())).thenReturn(actualizado);
         mockMvc.perform(put("/api/v1/resenas/1").contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new ResenaDTO(1L, 1L, 1L, "comentario", 5, java.time.LocalDate.now()))))
-            .andExpect(status().isOk());
+                .content(objectMapper
+                        .writeValueAsString(new ResenaDTO(1L, 1L, 1L, "comentario", 5, java.time.LocalDate.now()))))
+                .andExpect(status().isOk());
     }
 
     @Test
     void testEliminar() throws Exception {
         Mockito.doNothing().when(resenaService).eliminarResena(1L);
         mockMvc.perform(delete("/api/v1/resenas/1")).andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testActualizarResenaNoExistenteDevuelveNotFound() throws Exception {
+        // CORREGIDO: Usando los nombres de campos reales de tu DTO
+        com.bookpoint.resena.dto.ResenaDTO req = new com.bookpoint.resena.dto.ResenaDTO();
+        req.setUsuarioId(1L);
+        req.setProductoId(1L);
+        req.setCalificacion(5);
+        req.setComentario("Buena");
+        req.setFechaResena(java.time.LocalDate.now());
+
+        org.mockito.Mockito.when(resenaService.actualizarResena(org.mockito.Mockito.eq(99L), org.mockito.Mockito.any()))
+                .thenThrow(new RuntimeException("No existe reseña con id: 99"));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/resenas/99")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound());
     }
 }

@@ -1,4 +1,5 @@
 package com.bookpoint.notificacion.controller;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bookpoint.notificacion.dto.NotificacionDTO;
 import com.bookpoint.notificacion.service.NotificacionService;
@@ -22,16 +23,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(NotificacionController.class)
 @ActiveProfiles("test")
 public class NotificacionControllerTest {
-    @Autowired private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
     @SuppressWarnings("removal")
-    @MockBean private NotificacionService notificacionService;
-    @Autowired private ObjectMapper objectMapper;
+    @MockBean
+    private NotificacionService notificacionService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void testListarTodos() throws Exception {
         NotificacionDTO dto = new NotificacionDTO(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now());
-        Mockito.when(notificacionService.listarNotificacions()).thenReturn(Arrays.asList(new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now())));
-        Mockito.when(notificacionService.listarNotificacions()).thenReturn(Arrays.asList(new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now())));
+        Mockito.when(notificacionService.listarNotificacions()).thenReturn(
+                Arrays.asList(new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now())));
+        Mockito.when(notificacionService.listarNotificacions()).thenReturn(
+                Arrays.asList(new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now())));
         mockMvc.perform(get("/api/v1/notificaciones")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)));
     }
 
@@ -39,17 +45,19 @@ public class NotificacionControllerTest {
     void testCrear() throws Exception {
         NotificacionDTO dto = new NotificacionDTO(null, 1L, "mensaje", "tipo", true, java.time.LocalDate.now());
         Notificacion guardado = new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now());
-        Mockito.when(notificacionService.guardarNotificacion(ArgumentMatchers.<Notificacion>any())).thenReturn(guardado);
+        Mockito.when(notificacionService.guardarNotificacion(ArgumentMatchers.<Notificacion>any()))
+                .thenReturn(guardado);
         mockMvc.perform(post("/api/v1/notificaciones").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
     }
 
     @Test
     void testObtenerPorIdExistente() throws Exception {
         Notificacion obj = new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now());
         Mockito.when(notificacionService.obtenerNotificacionPorId(1L)).thenReturn(Optional.of(obj));
-        mockMvc.perform(get("/api/v1/notificaciones/1")).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
+        mockMvc.perform(get("/api/v1/notificaciones/1")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L));
     }
 
     @Test
@@ -61,15 +69,38 @@ public class NotificacionControllerTest {
     @Test
     void testActualizar() throws Exception {
         Notificacion actualizado = new Notificacion(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now());
-        Mockito.when(notificacionService.actualizarNotificacion(eq(1L), ArgumentMatchers.<Notificacion>any())).thenReturn(actualizado);
+        Mockito.when(notificacionService.actualizarNotificacion(eq(1L), ArgumentMatchers.<Notificacion>any()))
+                .thenReturn(actualizado);
         mockMvc.perform(put("/api/v1/notificaciones/1").contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new NotificacionDTO(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now()))))
-            .andExpect(status().isOk());
+                .content(objectMapper.writeValueAsString(
+                        new NotificacionDTO(1L, 1L, "mensaje", "tipo", true, java.time.LocalDate.now()))))
+                .andExpect(status().isOk());
     }
 
     @Test
     void testEliminar() throws Exception {
         Mockito.doNothing().when(notificacionService).eliminarNotificacion(1L);
         mockMvc.perform(delete("/api/v1/notificaciones/1")).andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testActualizarNotificacionNoExistenteDevuelveNotFound() throws Exception {
+        // Inicializamos el DTO simulando datos básicos de una notificación
+        com.bookpoint.notificacion.dto.NotificacionDTO req = new com.bookpoint.notificacion.dto.NotificacionDTO();
+        req.setUsuarioId(1L);
+        req.setMensaje("Mensaje de prueba");
+
+        // Simulamos que el servicio lanza la excepción al buscar el ID 99
+        org.mockito.Mockito
+                .when(notificacionService.actualizarNotificacion(org.mockito.Mockito.eq(99L),
+                        org.mockito.Mockito.any()))
+                .thenThrow(new RuntimeException("No existe notificacion con id: 99"));
+
+        // Ejecutamos la petición PUT esperando el 404 Not Found
+        mockMvc.perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/notificaciones/99")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound());
     }
 }

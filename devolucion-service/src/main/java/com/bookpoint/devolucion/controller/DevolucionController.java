@@ -23,7 +23,7 @@ public class DevolucionController {
     @GetMapping
     @Operation(summary = "Listar todos")
     public List<DevolucionDTO> listarTodos() {
-        return devolucionService.listarDevolucions().stream().map(DevolucionDTO::fromEntity).collect(Collectors.toList());
+        return devolucionService.listarDevoluciones().stream().map(DevolucionDTO::fromEntity).collect(Collectors.toList());
     }
     @GetMapping("/{id}")
     @Operation(summary = "Obtener por ID")

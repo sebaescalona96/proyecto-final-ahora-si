@@ -1,4 +1,5 @@
 package com.bookpoint.transferencia.controller;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bookpoint.transferencia.dto.TransferenciaDTO;
 import com.bookpoint.transferencia.model.Transferencia;
@@ -14,42 +15,37 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest @AutoConfigureMockMvc @ActiveProfiles("test")
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
 class TransferenciaControllerIT {
-    @Autowired private MockMvc mockMvc;
-    @Autowired private TransferenciaRepository transferenciaRepository;
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private TransferenciaRepository transferenciaRepository;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @BeforeEach void limpiar() { transferenciaRepository.deleteAll(); }
+    @BeforeEach
+    void limpiar() {
+        transferenciaRepository.deleteAll();
+    }
 
     @Test
     void testCrearYListar() throws Exception {
         TransferenciaDTO dto = new TransferenciaDTO(null, 1L, 1L, 1L, 5, "estado", java.time.LocalDate.now());
         mockMvc.perform(post("/api/v1/transferencias").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.id").exists());
+                .andExpect(status().isOk()).andExpect(jsonPath("$.id").exists());
         mockMvc.perform(get("/api/v1/transferencias")).andExpect(status().isOk())
-            .andExpect(jsonPath("$[0]").exists());
+                .andExpect(jsonPath("$[0]").exists());
     }
 
     @Test
     void testEliminar() throws Exception {
-        Transferencia guardado = transferenciaRepository.save(new Transferencia(null, 1L, 1L, 1L, 5, "estado", java.time.LocalDate.now()));
+        Transferencia guardado = transferenciaRepository
+                .save(new Transferencia(null, 1L, 1L, 1L, 5, "estado", java.time.LocalDate.now()));
         mockMvc.perform(delete("/api/v1/transferencias/" + guardado.getId())).andExpect(status().isNoContent());
         mockMvc.perform(get("/api/v1/transferencias/" + guardado.getId())).andExpect(status().isNotFound());
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testActualizar
-    // Dificultad: ⭐⭐ (MEDIO) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. Guardar un transferencia en BD con transferenciaRepository.save(...)
-    //   2. Crear un DTO con datos diferentes
-    //   3. PUT /api/v1/transferencias/id con el DTO como body
-    //   4. Verificar status().isOk()
-    // ══════════════════════════════════════════════════════════════════
-    @Test
-    void testActualizar() throws Exception {
-        // TODO: implementar esta prueba en vivo
     }
 }

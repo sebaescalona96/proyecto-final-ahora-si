@@ -1,4 +1,5 @@
 package com.bookpoint.producto.service;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -14,14 +15,19 @@ import com.bookpoint.producto.model.Producto;
 import com.bookpoint.producto.repository.ProductoRepository;
 
 public class ProductoServiceTest {
-    @Mock private ProductoRepository productoRepository;
-    @InjectMocks private ProductoService productoService;
+    @Mock
+    private ProductoRepository productoRepository;
+    @InjectMocks
+    private ProductoService productoService;
 
-    @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testGuardarProducto() {
-        Producto nuevo   = new Producto(null, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial");
+        Producto nuevo = new Producto(null, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial");
         Producto guardado = new Producto(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial");
         when(productoRepository.save(nuevo)).thenReturn(guardado);
         Producto resultado = productoService.guardarProducto(nuevo);
@@ -31,7 +37,8 @@ public class ProductoServiceTest {
 
     @Test
     void testListarProductos() {
-        List<Producto> lista = Arrays.asList(new Producto(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial"));
+        List<Producto> lista = Arrays
+                .asList(new Producto(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial"));
         when(productoRepository.findAll()).thenReturn(lista);
         List<Producto> resultado = productoService.listarProductos();
         assertThat(resultado).hasSize(1);
@@ -58,7 +65,8 @@ public class ProductoServiceTest {
     @Test
     void testActualizarProducto() {
         Producto existente = new Producto(1L, "nombre", "descripcion", 99.9, "categoria", "autor", "editorial");
-        Producto nuevo     = new Producto(null, "alt-nombre", "alt-descripcion", 199.9, "alt-categoria", "alt-autor", "alt-editorial");
+        Producto nuevo = new Producto(null, "alt-nombre", "alt-descripcion", 199.9, "alt-categoria", "alt-autor",
+                "alt-editorial");
         when(productoRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(productoRepository.save(any(Producto.class))).thenAnswer(i -> i.getArgument(0));
         Producto resultado = productoService.actualizarProducto(1L, nuevo);
@@ -66,16 +74,20 @@ public class ProductoServiceTest {
         verify(productoRepository).save(existente);
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testEliminarProducto
-    // Dificultad: ⭐ (FACIL) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. doNothing().when(productoRepository).deleteById(1L);
-    //   2. productoService.eliminarProducto(1L);
-    //   3. verify(productoRepository).deleteById(1L);
-    // ══════════════════════════════════════════════════════════════════
     @Test
-    void testEliminarProducto() {
-        // TODO: implementar esta prueba en vivo
+    void testActualizarProductoNoExistenteLanzaExcepcion() {
+        Long idInexistente = 99L;
+        com.bookpoint.producto.model.Producto datosNuevos = new com.bookpoint.producto.model.Producto();
+        datosNuevos.setId(idInexistente);
+
+        // Simulamos que el repositorio no encuentra el producto
+        org.mockito.Mockito.when(productoRepository.findById(idInexistente))
+                .thenReturn(java.util.Optional.empty());
+
+        // Verificamos que se lance la RuntimeException con el mensaje exacto sin tilde
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> {
+            productoService.actualizarProducto(idInexistente, datosNuevos);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("No existe producto con id: " + idInexistente);
     }
 }

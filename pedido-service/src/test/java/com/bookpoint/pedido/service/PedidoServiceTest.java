@@ -1,4 +1,5 @@
 package com.bookpoint.pedido.service;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -14,14 +15,19 @@ import com.bookpoint.pedido.model.Pedido;
 import com.bookpoint.pedido.repository.PedidoRepository;
 
 public class PedidoServiceTest {
-    @Mock private PedidoRepository pedidoRepository;
-    @InjectMocks private PedidoService pedidoService;
+    @Mock
+    private PedidoRepository pedidoRepository;
+    @InjectMocks
+    private PedidoService pedidoService;
 
-    @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testGuardarPedido() {
-        Pedido nuevo   = new Pedido(null, 1L, 1L, 5, "estado", java.time.LocalDate.now(), "direccionEntrega");
+        Pedido nuevo = new Pedido(null, 1L, 1L, 5, "estado", java.time.LocalDate.now(), "direccionEntrega");
         Pedido guardado = new Pedido(1L, 1L, 1L, 5, "estado", java.time.LocalDate.now(), "direccionEntrega");
         when(pedidoRepository.save(nuevo)).thenReturn(guardado);
         Pedido resultado = pedidoService.guardarPedido(nuevo);
@@ -31,7 +37,8 @@ public class PedidoServiceTest {
 
     @Test
     void testListarPedidos() {
-        List<Pedido> lista = Arrays.asList(new Pedido(1L, 1L, 1L, 5, "estado", java.time.LocalDate.now(), "direccionEntrega"));
+        List<Pedido> lista = Arrays
+                .asList(new Pedido(1L, 1L, 1L, 5, "estado", java.time.LocalDate.now(), "direccionEntrega"));
         when(pedidoRepository.findAll()).thenReturn(lista);
         List<Pedido> resultado = pedidoService.listarPedidos();
         assertThat(resultado).hasSize(1);
@@ -58,7 +65,7 @@ public class PedidoServiceTest {
     @Test
     void testActualizarPedido() {
         Pedido existente = new Pedido(1L, 1L, 1L, 5, "estado", java.time.LocalDate.now(), "direccionEntrega");
-        Pedido nuevo     = new Pedido(null, 1L, 1L, 10, "alt-estado", java.time.LocalDate.now(), "alt-direccionEntrega");
+        Pedido nuevo = new Pedido(null, 1L, 1L, 10, "alt-estado", java.time.LocalDate.now(), "alt-direccionEntrega");
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(pedidoRepository.save(any(Pedido.class))).thenAnswer(i -> i.getArgument(0));
         Pedido resultado = pedidoService.actualizarPedido(1L, nuevo);
@@ -66,16 +73,20 @@ public class PedidoServiceTest {
         verify(pedidoRepository).save(existente);
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testEliminarPedido
-    // Dificultad: ⭐ (FACIL) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. doNothing().when(pedidoRepository).deleteById(1L);
-    //   2. pedidoService.eliminarPedido(1L);
-    //   3. verify(pedidoRepository).deleteById(1L);
-    // ══════════════════════════════════════════════════════════════════
     @Test
-    void testEliminarPedido() {
-        // TODO: implementar esta prueba en vivo
+    void testActualizarPedidoNoExistenteLanzaExcepcion() {
+        Long idInexistente = 99L;
+        com.bookpoint.pedido.model.Pedido datosNuevos = new com.bookpoint.pedido.model.Pedido();
+        datosNuevos.setId(idInexistente);
+
+        // Simulamos que el repositorio devuelve un Optional vacío
+        org.mockito.Mockito.when(pedidoRepository.findById(idInexistente))
+                .thenReturn(java.util.Optional.empty());
+
+        // Verificamos que se levante la RuntimeException exacta sin tilde
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> {
+            pedidoService.actualizarPedido(idInexistente, datosNuevos);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("No existe pedido con id: " + idInexistente);
     }
 }
