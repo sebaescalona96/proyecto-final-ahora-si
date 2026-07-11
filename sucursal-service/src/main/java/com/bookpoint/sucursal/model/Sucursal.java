@@ -1,33 +1,33 @@
 package com.bookpoint.sucursal.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 @Data @NoArgsConstructor @AllArgsConstructor
 @Entity @Table(name = "sucursales")
 public class Sucursal {
-
-    @Id 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre de la sucursal no puede estar vacío ni en blanco")
-    @Column(name = "nombre")
+    @NotBlank(message = "El nombre de la sucursal es obligatorio")
+    @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @NotBlank(message = "La dirección no puede estar vacía ni en blanco")
-    @Column(name = "direccion")
+    @NotBlank(message = "La direccion es obligatoria")
+    @Column(name = "direccion", nullable = false)
     private String direccion;
 
-    @NotBlank(message = "La ciudad no puede estar vacía ni en blanco")
-    @Column(name = "ciudad")
+    @NotBlank(message = "La ciudad es obligatoria")
+    @Pattern(regexp = "Concepcion|Temuco|La Serena",
+            message = "Ciudad invalida. Use: Concepcion, Temuco o La Serena")
+    @Column(name = "ciudad", nullable = false)
     private String ciudad;
 
-    @NotBlank(message = "El teléfono no puede estar vacío ni en blanco")
+    @Pattern(regexp = "\\d{9}", message = "El telefono debe tener 9 digitos")
     @Column(name = "telefono")
     private String telefono;
 
-    @NotBlank(message = "El horario no puede estar vacío ni en blanco")
     @Column(name = "horario")
     private String horario;
 }
