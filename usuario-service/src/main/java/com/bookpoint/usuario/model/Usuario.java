@@ -9,7 +9,8 @@ import lombok.*;
 @Data @NoArgsConstructor @AllArgsConstructor
 @Entity @Table(name = "usuarios")
 public class Usuario {
-@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "El nombre es obligatorio")
