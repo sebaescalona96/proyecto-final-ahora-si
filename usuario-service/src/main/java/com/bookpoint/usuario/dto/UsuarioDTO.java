@@ -1,23 +1,35 @@
 package com.bookpoint.usuario.dto;
 import lombok.*;
 import com.bookpoint.usuario.model.Usuario;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 @Data @NoArgsConstructor @AllArgsConstructor
 public class UsuarioDTO {
     private Long id;
+
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
     private String nombre;
+
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El email no tiene un formato valido")
     private String email;
+
+    @NotBlank(message = "La password es obligatoria")
+    @Size(min = 4, message = "La password debe tener al menos 4 caracteres")
     private String password;
+
+    @NotBlank(message = "El rol es obligatorio")
+    @Pattern(regexp = "ADMIN|CLIENTE|VENDEDOR|LOGISTICA|BODEGA", message = "Rol invalido. Use: ADMIN, CLIENTE, VENDEDOR, LOGISTICA o BODEGA")
     private String rol;
 
-    public static UsuarioDTO fromEntity(Usuario entity) {
-        return new UsuarioDTO(
-            entity.getId(),
-            entity.getNombre(),
-            entity.getEmail(),
-            entity.getPassword(),
-            entity.getRol()
-        );
+    public static UsuarioDTO fromEntity(Usuario u) {
+        return new UsuarioDTO(u.getId(), u.getNombre(), u.getEmail(), u.getPassword(), u.getRol());
     }
+
     public Usuario toEntity() {
         return new Usuario(id, nombre, email, password, rol);
     }
