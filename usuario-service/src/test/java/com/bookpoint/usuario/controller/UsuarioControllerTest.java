@@ -1,4 +1,5 @@
 package com.bookpoint.usuario.controller;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bookpoint.usuario.dto.UsuarioDTO;
 import com.bookpoint.usuario.service.UsuarioService;
@@ -23,50 +24,59 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 public class UsuarioControllerTest {
     @Autowired private MockMvc mockMvc;
-    @SuppressWarnings("removal")
-    @MockBean private UsuarioService usuarioService;
+    @SuppressWarnings("removal") @MockBean private UsuarioService usuarioService;
     @Autowired private ObjectMapper objectMapper;
 
     @Test
     void testListarTodos() throws Exception {
-        UsuarioDTO dto = new UsuarioDTO(1L, "nombre", "email", "password", "rol");
-        Mockito.when(usuarioService.listarUsuarios()).thenReturn(Arrays.asList(new Usuario(1L, "nombre", "email", "password", "rol")));
-        Mockito.when(usuarioService.listarUsuarios()).thenReturn(Arrays.asList(new Usuario(1L, "nombre", "email", "password", "rol")));
-        mockMvc.perform(get("/api/v1/usuarios")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)));
+        Usuario obj = new Usuario(1L, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
+        Mockito.when(usuarioService.listarUsuarios()).thenReturn(Arrays.asList(obj));
+        mockMvc.perform(get("/api/v1/usuarios")).andExpect(status().isOk()).andExpect(jsonPath("$",hasSize(1)));
     }
-
     @Test
     void testCrear() throws Exception {
-        UsuarioDTO dto = new UsuarioDTO(null, "nombre", "email", "password", "rol");
-        Usuario guardado = new Usuario(1L, "nombre", "email", "password", "rol");
+        UsuarioDTO dto = new UsuarioDTO(null, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
+        Usuario guardado = new Usuario(1L, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
         Mockito.when(usuarioService.guardarUsuario(ArgumentMatchers.<Usuario>any())).thenReturn(guardado);
         mockMvc.perform(post("/api/v1/usuarios").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
             .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
     }
-
+    @Test
+    void testCrearConDatosInvalidosRetorna400() throws Exception {
+        UsuarioDTO dto = new UsuarioDTO(null, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
+        mockMvc.perform(post("/api/v1/usuarios").contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+            .andExpect(status().isBadRequest());
+    }
     @Test
     void testObtenerPorIdExistente() throws Exception {
-        Usuario obj = new Usuario(1L, "nombre", "email", "password", "rol");
+        Usuario obj = new Usuario(1L, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
         Mockito.when(usuarioService.obtenerUsuarioPorId(1L)).thenReturn(Optional.of(obj));
         mockMvc.perform(get("/api/v1/usuarios/1")).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1L));
     }
-
     @Test
     void testObtenerPorIdNoExistente() throws Exception {
         Mockito.when(usuarioService.obtenerUsuarioPorId(99L)).thenReturn(Optional.empty());
         mockMvc.perform(get("/api/v1/usuarios/99")).andExpect(status().isNotFound());
     }
-
     @Test
     void testActualizar() throws Exception {
-        Usuario actualizado = new Usuario(1L, "nombre", "email", "password", "rol");
-        Mockito.when(usuarioService.actualizarUsuario(eq(1L), ArgumentMatchers.<Usuario>any())).thenReturn(actualizado);
+        Usuario actualizado = new Usuario(1L, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
+        Mockito.when(usuarioService.actualizarUsuario(eq(1L),ArgumentMatchers.<Usuario>any())).thenReturn(actualizado);
         mockMvc.perform(put("/api/v1/usuarios/1").contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new UsuarioDTO(1L, "nombre", "email", "password", "rol"))))
+                .content(objectMapper.writeValueAsString(new UsuarioDTO(1L, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE"))))
             .andExpect(status().isOk());
     }
-
+    @Test
+    void testActualizarNoExistente() throws Exception {
+        UsuarioDTO dto = new UsuarioDTO(null, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
+        Mockito.when(usuarioService.actualizarUsuario(eq(99L),ArgumentMatchers.<Usuario>any()))
+            .thenThrow(new RuntimeException("No existe"));
+        mockMvc.perform(put("/api/v1/usuarios/99").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(status().isNotFound());
+    }
     @Test
     void testEliminar() throws Exception {
         Mockito.doNothing().when(usuarioService).eliminarUsuario(1L);
