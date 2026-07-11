@@ -1,15 +1,20 @@
 package com.bookpoint.usuario.service;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
 import com.bookpoint.usuario.model.Usuario;
 import com.bookpoint.usuario.repository.UsuarioRepository;
 
@@ -21,8 +26,8 @@ public class UsuarioServiceTest {
 
     @Test
     void testGuardarUsuario() {
-        Usuario nuevo   = new Usuario(null, "nombre", "email", "password", "rol");
-        Usuario guardado = new Usuario(1L, "nombre", "email", "password", "rol");
+        Usuario nuevo = new Usuario(null, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
+        Usuario guardado = new Usuario(1L, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
         when(usuarioRepository.save(nuevo)).thenReturn(guardado);
         Usuario resultado = usuarioService.guardarUsuario(nuevo);
         assertThat(resultado.getId()).isEqualTo(1L);
@@ -31,7 +36,7 @@ public class UsuarioServiceTest {
 
     @Test
     void testListarUsuarios() {
-        List<Usuario> lista = Arrays.asList(new Usuario(1L, "nombre", "email", "password", "rol"));
+        List<Usuario> lista = Arrays.asList(new Usuario(1L, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE"));
         when(usuarioRepository.findAll()).thenReturn(lista);
         List<Usuario> resultado = usuarioService.listarUsuarios();
         assertThat(resultado).hasSize(1);
@@ -40,7 +45,7 @@ public class UsuarioServiceTest {
 
     @Test
     void testObtenerUsuarioPorIdExistente() {
-        Usuario obj = new Usuario(1L, "nombre", "email", "password", "rol");
+        Usuario obj = new Usuario(1L, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(obj));
         Optional<Usuario> resultado = usuarioService.obtenerUsuarioPorId(1L);
         assertThat(resultado).isPresent();
@@ -57,8 +62,8 @@ public class UsuarioServiceTest {
 
     @Test
     void testActualizarUsuario() {
-        Usuario existente = new Usuario(1L, "nombre", "email", "password", "rol");
-        Usuario nuevo     = new Usuario(null, "alt-nombre", "alt-email", "alt-password", "alt-rol");
+        Usuario existente = new Usuario(1L, "Juan Perez", "juan@bookpoint.cl", "pass1234", "CLIENTE");
+        Usuario nuevo = new Usuario(null, "Juan Actualizado", "juan.nuevo@bookpoint.cl", "clave5678", "ADMIN");
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
         Usuario resultado = usuarioService.actualizarUsuario(1L, nuevo);
@@ -66,16 +71,17 @@ public class UsuarioServiceTest {
         verify(usuarioRepository).save(existente);
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testEliminarUsuario
-    // Dificultad: ⭐ (FACIL) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. doNothing().when(usuarioRepository).deleteById(1L);
-    //   2. usuarioService.eliminarUsuario(1L);
-    //   3. verify(usuarioRepository).deleteById(1L);
-    // ══════════════════════════════════════════════════════════════════
+    @Test
+    void testActualizarUsuarioNoExistente() {
+        Usuario nuevo = new Usuario(null, "Juan Actualizado", "juan.nuevo@bookpoint.cl", "clave5678", "ADMIN");
+        when(usuarioRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> usuarioService.actualizarUsuario(99L, nuevo));
+    }
+
     @Test
     void testEliminarUsuario() {
-        // TODO: implementar esta prueba en vivo
+        doNothing().when(usuarioRepository).deleteById(1L);
+        usuarioService.eliminarUsuario(1L);
+        verify(usuarioRepository).deleteById(1L);
     }
 }
