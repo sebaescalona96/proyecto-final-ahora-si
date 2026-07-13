@@ -1,6 +1,8 @@
 package com.bookpoint.proveedor.controller;
+
 import java.util.List;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +11,7 @@ import com.bookpoint.proveedor.model.Proveedor;
 import com.bookpoint.proveedor.service.ProveedorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/v1/proveedores")
 @Tag(name = "Proveedor", description = "CRUD de Proveedor - BookPoint Chile")
@@ -17,7 +20,7 @@ public class ProveedorController {
 
     @PostMapping
     @Operation(summary = "Crear proveedor")
-    public ProveedorDTO crear(@RequestBody ProveedorDTO dto) {
+    public ProveedorDTO crear(@Valid @RequestBody ProveedorDTO dto) {
         return ProveedorDTO.fromEntity(proveedorService.guardarProveedor(dto.toEntity()));
     }
     @GetMapping
@@ -33,7 +36,7 @@ public class ProveedorController {
     }
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar")
-    public ResponseEntity<ProveedorDTO> actualizar(@PathVariable Long id, @RequestBody ProveedorDTO dto) {
+    public ResponseEntity<ProveedorDTO> actualizar(@PathVariable Long id, @Valid @RequestBody ProveedorDTO dto) {
         try { return ResponseEntity.ok(ProveedorDTO.fromEntity(proveedorService.actualizarProveedor(id, dto.toEntity()))); }
         catch (RuntimeException ex) { return ResponseEntity.notFound().build(); }
     }
@@ -44,3 +47,4 @@ public class ProveedorController {
         return ResponseEntity.noContent().build();
     }
 }
+
