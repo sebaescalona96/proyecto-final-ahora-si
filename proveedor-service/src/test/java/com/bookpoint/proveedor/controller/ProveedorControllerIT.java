@@ -1,4 +1,5 @@
 package com.bookpoint.proveedor.controller;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bookpoint.proveedor.dto.ProveedorDTO;
 import com.bookpoint.proveedor.model.Proveedor;
@@ -24,7 +25,7 @@ class ProveedorControllerIT {
 
     @Test
     void testCrearYListar() throws Exception {
-        ProveedorDTO dto = new ProveedorDTO(null, "nombre", "email", "telefono", "editorial", true);
+        ProveedorDTO dto = new ProveedorDTO(null, "Editorial Planeta", "contacto@planeta.cl", "223456789", "Planeta", true);
         mockMvc.perform(post("/api/v1/proveedores").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
             .andExpect(status().isOk()).andExpect(jsonPath("$.id").exists());
@@ -33,23 +34,30 @@ class ProveedorControllerIT {
     }
 
     @Test
-    void testEliminar() throws Exception {
-        Proveedor guardado = proveedorRepository.save(new Proveedor(null, "nombre", "email", "telefono", "editorial", true));
-        mockMvc.perform(delete("/api/v1/proveedores/" + guardado.getId())).andExpect(status().isNoContent());
-        mockMvc.perform(get("/api/v1/proveedores/" + guardado.getId())).andExpect(status().isNotFound());
+    void testCrearConDatosInvalidosRetorna400() throws Exception {
+        mockMvc.perform(post("/api/v1/proveedores").contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+            .andExpect(status().isBadRequest());
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // TODO: IMPLEMENTAR EN VIVO - testActualizar
-    // Dificultad: ⭐⭐ (MEDIO) — Ver PRUEBAS_PARA_MEMORIZAR.md
-    // Pasos:
-    //   1. Guardar un proveedor en BD con proveedorRepository.save(...)
-    //   2. Crear un DTO con datos diferentes
-    //   3. PUT /api/v1/proveedores/id con el DTO como body
-    //   4. Verificar status().isOk()
-    // ══════════════════════════════════════════════════════════════════
+    @Test
+    void testEliminar() throws Exception {
+        Proveedor guardado = proveedorRepository.save(new Proveedor(null, "Editorial Planeta", "contacto@planeta.cl", "223456789", "Planeta", true));
+        mockMvc.perform(delete("/api/v1/proveedores/"+guardado.getId())).andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/v1/proveedores/"+guardado.getId())).andExpect(status().isNotFound());
+    }
+
     @Test
     void testActualizar() throws Exception {
-        // TODO: implementar esta prueba en vivo
+        Proveedor guardado = proveedorRepository.save(new Proveedor(null, "Editorial Planeta", "contacto@planeta.cl", "223456789", "Planeta", true));
+        ProveedorDTO dto = new ProveedorDTO(null, "Editorial Penguin", "ventas@penguin.cl", "224567890", "Penguin", false);
+        mockMvc.perform(put("/api/v1/proveedores/"+guardado.getId()).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void testObtenerPorIdNoExistente() throws Exception {
+        mockMvc.perform(get("/api/v1/proveedores/9999")).andExpect(status().isNotFound());
     }
 }
